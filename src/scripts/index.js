@@ -1,5 +1,5 @@
 import '../styles/index.css';
-import {addCard} from './cards.js';
+import {addCard} from './card.js';
 import initialCards from './initialCards.js';
 import {openModal, closeModal} from './modal.js';
 
@@ -23,7 +23,7 @@ const newCardSource = formNewCard.link;
 
 function addInitialCards() {
   initialCards.forEach(el => {
-    addCard(placesList, 'end', el.name, el.link, openModal);
+    addCard(placesList, 'end', el, openModal);
   })
 }
 
@@ -36,15 +36,25 @@ function handleFormSubmitEdit(evt) {
 
 function handleFormSubmitNewCard(evt) {
   evt.preventDefault();
-  addCard(placesList, 'start', newCardName.value, newCardSource.value, openModal);
+  const name = newCardName.value;
+  const link = newCardSource.value
+  addCard(placesList, 'start', {name, link} , openModal);
   closeModal(evt.target.closest('.popup'));
+  formNewCard.reset();
 }
 
-profileEditButton.addEventListener('click', () => openModal(popupEdit));
+profileEditButton.addEventListener('click', () => {
+  nameInput.value = profileTitle.textContent;
+  jobInput.value = profileDescription.textContent;
+  openModal(popupEdit);
+});
+
 newCardButton.addEventListener('click', () => openModal(popupNewCard));
+
 popupCloseButtons.forEach((el) => {
   el.addEventListener('click', (evt) => closeModal(evt.target.closest('.popup')));
 })
+
 formEditProfile.addEventListener('submit', handleFormSubmitEdit);
 formNewCard.addEventListener('submit', handleFormSubmitNewCard);
 
