@@ -9,12 +9,12 @@ function handleLike(evt) {
   evt.target.classList.toggle('card__like-button_is-active')
 }
 
-const handlers = {
+export const handlers = {
   handleDelete,
   handleLike,
 };
 
-function createCard(cardData, handlers) {
+export function createCard(cardData, handlers) {
   const newCard = cardTemplate.cloneNode(true);
 
   const newCardName = newCard.querySelector('.card__title');
@@ -31,17 +31,4 @@ function createCard(cardData, handlers) {
   newCardLike.addEventListener('click', handlers.handleLike);
 
   return newCard;
-};
-
-export function addCard(place, position, cardData) {
-  switch(position) {
-    case 'start':
-      place.prepend(createCard(cardData, handlers));
-      break;
-    case 'end':
-      place.append(createCard(cardData, handlers));
-      break;
-    default:
-      place.append(createCard(cardData, handlers));
-  }
 };

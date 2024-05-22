@@ -1,5 +1,5 @@
 import '../styles/index.css';
-import {addCard} from './card.js';
+import {createCard, handlers} from './card.js';
 import initialCards from './initialCards.js';
 import {openModal, closeModal} from './modal.js';
 
@@ -27,19 +27,35 @@ const popupTypeImage = document.querySelector('.popup_type_image');
 const popupImage = popupTypeImage.querySelector('.popup__image');
 const popupCaption = popupTypeImage.querySelector('.popup__caption');
 
+function addCard(place, position, cardData) {
+  const newCard = createCard(cardData, handlers);
+  const newCardImage = newCard.querySelector('.card__image');
+  newCardImage.addEventListener('click', handleImageClick);
+
+  switch(position) {
+    case 'start':
+      place.prepend(newCard);
+      break;
+    case 'end':
+      place.append(newCard);
+      break;
+    default:
+      place.append(newCard);
+  }
+};
+
+
 function addInitialCards() {
   initialCards.forEach(el => {
     addCard(placesList, 'end', el);
   })
-  const cardImages = document.querySelectorAll('.card__image');
-  cardImages.forEach(el => el.addEventListener('click', handleImageClick));
 }
 
 function handleFormSubmitEdit(evt) {
   evt.preventDefault();
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
-  closeModal(evt.target.closest('.popup'));
+  closeModal(popupEdit);
 }
 
 function handleFormSubmitNewCard(evt) {
@@ -47,11 +63,8 @@ function handleFormSubmitNewCard(evt) {
   const name = newCardName.value;
   const link = newCardSource.value
   addCard(placesList, 'start', {name, link});
-  closeModal(evt.target.closest('.popup'));
+  closeModal(popupNewCard);
   formNewCard.reset();
-
-  const cardImage = document.querySelector('.card__image');
-  cardImage.addEventListener('click', handleImageClick);
 }
 
 function handleImageClick (evt) {
@@ -69,9 +82,12 @@ profileEditButton.addEventListener('click', () => {
 
 newCardButton.addEventListener('click', () => openModal(popupNewCard));
 
-popupCloseButtons.forEach((el) => {
-  el.addEventListener('click', (evt) => closeModal(evt.target.closest('.popup')));
-})
+popupCloseButtons.forEach(el => {
+  const popup = el.closest('.popup');
+  el.addEventListener('click', evt => {
+    closeModal(popup);
+  })
+});
 
 formEditProfile.addEventListener('submit', handleFormSubmitEdit);
 formNewCard.addEventListener('submit', handleFormSubmitNewCard);

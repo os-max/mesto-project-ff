@@ -1,5 +1,6 @@
 function handleClick(evt) {
-  closeModal(evt.target);
+  const popupContent = evt.currentTarget.querySelector('.popup__content');
+  if (!popupContent.contains(evt.target)) closeModal(evt.target);
 }
 
 function handleEscape (evt) {
@@ -9,14 +10,14 @@ function handleEscape (evt) {
   }
 }
 
-export function openModal(window) {
-  window.classList.add('popup_is-opened');
+export function openModal(popup) {
+  popup.classList.add('popup_is-opened');
   document.addEventListener('keydown', handleEscape);
-  window.addEventListener('click', handleClick);
+  popup.addEventListener('click', handleClick);
 }
 
-export function closeModal(window) {
-  window.classList.remove('popup_is-opened');
+export function closeModal(popup) {
+  popup.classList.remove('popup_is-opened');
   document.removeEventListener('keydown', handleEscape);
-  window.removeEventListener('click', handleClick);
+  popup.removeEventListener('click', handleClick);
 }
