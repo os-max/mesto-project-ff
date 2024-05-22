@@ -1,5 +1,14 @@
 const cardTemplate = document.querySelector('#card-template').content;
 
+function handleDelete(evt) {
+  const listItem = evt.target.closest('.card');
+  listItem.remove();
+};
+
+function handleLike(evt) {
+  evt.target.classList.toggle('card__like-button_is-active')
+}
+
 const handlers = {
   handleDelete,
   handleLike,
@@ -23,15 +32,6 @@ function createCard(cardData, handlers) {
 
   return newCard;
 };
-
-function handleDelete(evt) {
-  const listItem = evt.target.closest('.card');
-  listItem.remove();
-};
-
-function handleLike(evt) {
-  evt.target.classList.toggle('card__like-button_is-active')
-}
 
 export function addCard(place, position, cardData) {
   switch(position) {
