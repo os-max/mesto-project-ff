@@ -1,28 +1,22 @@
-let listnerEscape = undefined;
-let listnerClick = undefined;
-
 function handleClick(evt) {
-  console.log(evt);
   closeModal(evt.target);
 }
 
-const handleEscape = function (window) {
-  listnerEscape = function (evt) {
-    if (evt.key === 'Escape') {
-      closeModal(window);
-    }
+function handleEscape (evt) {
+  if (evt.key === 'Escape') {
+    const window = document.querySelector('.popup_is-opened');
+    closeModal(window);
   }
-  return listnerEscape;
 }
 
 export function openModal(window) {
   window.classList.add('popup_is-opened');
-  document.addEventListener('keydown', handleEscape(window));
+  document.addEventListener('keydown', handleEscape);
   window.addEventListener('click', handleClick);
 }
 
 export function closeModal(window) {
   window.classList.remove('popup_is-opened');
-  document.removeEventListener('keydown', listnerEscape);
-  document.removeEventListener('click', listnerClick);
+  document.removeEventListener('keydown', handleEscape);
+  window.removeEventListener('click', handleClick);
 }
