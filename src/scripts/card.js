@@ -1,18 +1,13 @@
 const cardTemplate = document.querySelector('#card-template').content;
 
-function handleDelete(evt) {
+export function handleDelete(evt) {
   const listItem = evt.target.closest('.card');
   listItem.remove();
 };
 
-function handleLike(evt) {
+export function handleLike(evt) {
   evt.target.classList.toggle('card__like-button_is-active')
 }
-
-export const handlers = {
-  handleDelete,
-  handleLike,
-};
 
 export function createCard(cardData, handlers) {
   const newCard = cardTemplate.cloneNode(true);
@@ -23,6 +18,7 @@ export function createCard(cardData, handlers) {
   const newCardImage = newCard.querySelector('.card__image');
   newCardImage.src = cardData.link;
   newCardImage.alt = cardData.name;
+  newCardImage.addEventListener('click', handlers.handleImageClick);
 
   const newCardDelete = newCard.querySelector('.card__delete-button');
   newCardDelete.addEventListener('click', handlers.handleDelete);

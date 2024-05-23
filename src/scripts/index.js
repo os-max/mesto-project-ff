@@ -1,5 +1,5 @@
 import '../styles/index.css';
-import {createCard, handlers} from './card.js';
+import {createCard, handleDelete, handleLike} from './card.js';
 import initialCards from './initialCards.js';
 import {openModal, closeModal} from './modal.js';
 
@@ -27,11 +27,14 @@ const popupTypeImage = document.querySelector('.popup_type_image');
 const popupImage = popupTypeImage.querySelector('.popup__image');
 const popupCaption = popupTypeImage.querySelector('.popup__caption');
 
+const handlers = {
+  handleDelete,
+  handleLike,
+  handleImageClick
+};
+
 function addCard(place, position, cardData) {
   const newCard = createCard(cardData, handlers);
-  const newCardImage = newCard.querySelector('.card__image');
-  newCardImage.addEventListener('click', handleImageClick);
-
   switch(position) {
     case 'start':
       place.prepend(newCard);
