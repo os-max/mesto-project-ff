@@ -9,7 +9,8 @@ export function handleLike(evt) {
   evt.target.classList.toggle('card__like-button_is-active')
 }
 
-export function createCard(cardData, handlers) {
+export function createCard(cardData, handlers, userData) {
+  const isOwned = (cardData.owner._id === userData._id) ? true : false;
   const newCard = cardTemplate.cloneNode(true);
 
   const newCardName = newCard.querySelector('.card__title');
@@ -20,8 +21,14 @@ export function createCard(cardData, handlers) {
   newCardImage.alt = cardData.name;
   newCardImage.addEventListener('click', handlers.handleImageClick);
 
+
   const newCardDelete = newCard.querySelector('.card__delete-button');
-  newCardDelete.addEventListener('click', handlers.handleDelete);
+  if (isOwned) {
+    newCardDelete.addEventListener('click', handlers.handleDelete);
+  }
+  else {
+    newCardDelete.classList.add('card__delete-button_disabled');
+  }
 
   const newCardLike = newCard.querySelector('.card__like-button');
   newCardLike.addEventListener('click', handlers.handleLike);

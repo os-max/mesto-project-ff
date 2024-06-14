@@ -1,7 +1,11 @@
 import '../styles/index.css';
 import {createCard, handleDelete, handleLike} from './card.js';
-import initialCards from './initialCards.js';
 import {openModal, closeModal} from './modal.js';
+import {enableValidation, clearValidation, validationConfig} from './validation.js'
+import {getMyData, getInitialCards} from './API.js';
+
+const initialCards = [];
+let userData;
 
 const placesList = document.querySelector('.places__list');
 
@@ -15,6 +19,8 @@ const popupCloseButtons = document.querySelectorAll('.popup__close');
 
 const profileTitle = document.querySelector('.profile__title');
 const profileDescription = document.querySelector('.profile__description');
+const profileImage = document.querySelector('.profile__image');
+
 const formEditProfile = document.forms["edit-profile"];
 const nameInput = formEditProfile.name;
 const jobInput = formEditProfile.description;
@@ -34,7 +40,7 @@ const handlers = {
 };
 
 function addCard(place, position, cardData) {
-  const newCard = createCard(cardData, handlers);
+  const newCard = createCard(cardData, handlers, userData);
   switch(position) {
     case 'start':
       place.prepend(newCard);
@@ -48,8 +54,8 @@ function addCard(place, position, cardData) {
 };
 
 
-function addInitialCards() {
-  initialCards.forEach(el => {
+function addCards(cards) {
+  cards.forEach(el => {
     addCard(placesList, 'end', el);
   })
 }
@@ -64,7 +70,7 @@ function handleFormSubmitEdit(evt) {
 function handleFormSubmitNewCard(evt) {
   evt.preventDefault();
   const name = newCardName.value;
-  const link = newCardSource.value
+  const link = newCardSource.value;
   addCard(placesList, 'start', {name, link});
   closeModal(popupNewCard);
   formNewCard.reset();
@@ -77,13 +83,23 @@ function handleImageClick (evt) {
   openModal(popupTypeImage);
 }
 
+function setMyData(name, about, avatar) {
+  profileTitle.textContent = name;
+  profileDescription.textContent = about;
+  profileImage.setAttribute('style', `background-image: url(${avatar});`)
+}
+
 profileEditButton.addEventListener('click', () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
   openModal(popupEdit);
+  clearValidation(popupEdit, validationConfig);
 });
 
-newCardButton.addEventListener('click', () => openModal(popupNewCard));
+newCardButton.addEventListener('click', () => {
+  clearValidation(popupNewCard, validationConfig);
+  openModal(popupNewCard);
+})
 
 popupCloseButtons.forEach(el => {
   const popup = el.closest('.popup');
@@ -95,4 +111,21 @@ popupCloseButtons.forEach(el => {
 formEditProfile.addEventListener('submit', handleFormSubmitEdit);
 formNewCard.addEventListener('submit', handleFormSubmitNewCard);
 
-addInitialCards();
+enableValidation();
+
+const dataGetter = getMyData()
+  .then(res => {
+    userData = res;
+    setMyData(userData.name, userData.about, userData.avatar)
+  })
+  .catch(error => console.log(`Ошибка при получении данных о пользователе: ${error}`))
+
+const cardsGetter = getInitialCards()
+  .then(
+    cards => {
+      addCards(cards);
+  })
+  .catch(error => console.log(`Ошибка при попытке получения карточек: ${error}`));
+
+Promise.all([dataGetter, cardsGetter])
+  .then(res => console.log(res));
