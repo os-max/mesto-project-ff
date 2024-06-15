@@ -9,7 +9,6 @@ export const validationConfig = {
 
 function setEventListners(formElement) {
   const inputList = Array.from(formElement.querySelectorAll(validationConfig.inputSelector));
-  console.log(inputList);
   inputList.forEach((el) => {
     el.addEventListener('input', () => {
       isInputValid(formElement, el);
