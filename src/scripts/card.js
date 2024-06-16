@@ -10,22 +10,18 @@ export function handleLike(evt, cardLikeCounter, cardId, likeAPI, dislikeAPI) {
   if (likeButton.classList.contains('card__like-button_is-active')) {
     dislikeAPI(cardId)
       .then(card => {
-        console.log('disliked');
-        console.log(card);
         likeButton.classList.remove('card__like-button_is-active');
         cardLikeCounter.textContent = card.likes.length;
       })
-      .catch(error => console.log(error));
+      .catch(error => console.log(`Ошибка при попытке дизлайка карточки: ${error}`));
   }
   else {
     likeAPI(cardId)
       .then(card => {
-        console.log('liked');
-        console.log(card);
         likeButton.classList.add('card__like-button_is-active');
         cardLikeCounter.textContent = card.likes.length;
       })
-      .catch(error => console.log(error));
+      .catch(error => console.log(`Ошибка при попытке лайка карточки: ${error}`));
   }
 }
 
@@ -48,7 +44,9 @@ export function createCard(cardData, handlers, userId) {
   if (isOwned) {
     const cardDeleteEvent = new CustomEvent(`deleteCard`, {
       bubbles: true,
-      detail: cardData._id
+      detail: {
+        id: cardData._id
+      }
     });
     newCardDelete.addEventListener('click', evt => {
       handlers.handleDelete(evt, cardDeleteEvent);

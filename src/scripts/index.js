@@ -50,7 +50,6 @@ const avatarSubmitButton = formChangeAvatar.querySelector('.popup__button');
 
 const popupTypeConfirm = document.querySelector('.popup_type_confirm');
 const confirmDeleteButton = popupTypeConfirm.querySelector('.popup__button');
-console.log()
 
 const handlers = {
   handleDelete,
@@ -89,13 +88,15 @@ function handleFormSubmitEdit(evt) {
   profileSubmitButton.textContent = 'Сохранение...';
   setNewUserData(nameInput.value, jobInput.value)
     .then(res => {
-      console.log(res);
       profileTitle.textContent = nameInput.value;
       profileDescription.textContent = jobInput.value;
       closeModal(popupEdit);
       profileSubmitButton.textContent = 'Сохранить';
     })
-    .catch(error => console.log(error));
+    .catch(error => {
+      console.log(`Ошибка при отправке данных о пользователе: ${error}`)
+      profileSubmitButton.textContent = 'Сохранить';
+    });
 }
 
 function handleFormSubmitNewCard(evt) {
@@ -111,7 +112,8 @@ function handleFormSubmitNewCard(evt) {
       newCardSubmitButton.textContent = 'Сохранить';
     })
     .catch(error => {
-      console.log(`Ошибка ${error}. Попробуйте повторить загрузку позже`)
+      console.log(`Ошибка при отправке карточки: ${error}`);
+      newCardSubmitButton.textContent = 'Сохранить';
     });
 }
 
@@ -133,12 +135,31 @@ function handleAvatarChange(evt) {
   avatarSubmitButton.textContent = 'Сохранение...'
   changeAvatar(avatarLinkInput.value)
     .then(res => {
-      console.log(res);
       profileImage.setAttribute('style', `background-image: url(${avatarLinkInput.value});`);
       closeModal(popupTypeAvatar);
       avatarSubmitButton.textContent = 'Сохранить';
+      formChangeAvatar.reset();
+      clearValidation(formChangeAvatar, validationConfig);
     })
-    .catch(error => console.log(error));
+    .catch(error => {
+      console.log(`Ошибка при изменении аватара: ${error}`);
+      avatarSubmitButton.textContent = 'Сохранить';
+    });
+}
+
+function handleCardDeletion(evt) {
+  evt.preventDefault();
+  confirmDeleteButton.textContent = 'Удаление...';
+  deleteCard(cardPendingDeleteId)
+    .then(res => {
+      cardPendingDelete.remove();
+      closeModal(popupTypeConfirm);
+      confirmDeleteButton.textContent = 'Да';
+    })
+    .catch(error => {
+      console.log(`Не удалось удалить карточку, ошибка: ${error}`)
+      confirmDeleteButton.textContent = 'Да';
+    });
 }
 
 profileEditButton.addEventListener('click', () => {
@@ -152,53 +173,41 @@ clearValidation(popupNewCard, validationConfig);
 newCardButton.addEventListener('click', () => openModal(popupNewCard));
 
 clearValidation(popupTypeAvatar, validationConfig);
-profileImage.addEventListener('click', evt => openModal(popupTypeAvatar));
+profileImage.addEventListener('click', () => openModal(popupTypeAvatar));
 
 popupCloseButtons.forEach(el => {
   const popup = el.closest('.popup');
-  el.addEventListener('click', evt => {
-    closeModal(popup);
-  })
+  el.addEventListener('click', evt => closeModal(popup))
 });
 
 formEditProfile.addEventListener('submit', handleFormSubmitEdit);
 formNewCard.addEventListener('submit', handleFormSubmitNewCard);
 formChangeAvatar.addEventListener('submit', handleAvatarChange);
 
-enableValidation();
-
-const userDataGetter = getMyData()
-  .then(res => res)
-  .catch(error => `Ошибка при получении данных о пользователе: ${error}`);
-
-const cardsGetter = getInitialCards()
-  .then(cards => cards)
-  .catch(error => `Ошибка при попытке получения карточек: ${error}`);
-
-Promise.all([userDataGetter, cardsGetter])
-  .then(([userData, cards]) => {
-    console.log(cards);
-    userId = userData._id;
-    setMyData(userData.name, userData.about, userData.avatar);
-    addInitialCards(cards);
-  })
-  .catch(error => console.log(error));
-
 document.addEventListener('deleteCard', evt => {
   cardPendingDelete = evt.target;
-  cardPendingDeleteId = evt.detail;
+  cardPendingDeleteId = evt.detail.id;
   openModal(popupTypeConfirm);
 })
 
-popupTypeConfirm.addEventListener('submit', evt => {
-  evt.preventDefault();
-  confirmDeleteButton.textContent = 'Удаление...'
-  deleteCard(cardPendingDeleteId)
-    .then(res => {
-      console.log(res)
-      cardPendingDelete.remove();
-      closeModal(popupTypeConfirm);
-      confirmDeleteButton.textContent = 'Да'
-    })
-    .catch(error => console.log(error));
-})
+popupTypeConfirm.addEventListener('submit', handleCardDeletion);
+
+enableValidation();
+
+const userDataGetter = getMyData()
+  .then(userData => userData)
+  .catch(error => Promise.reject(`Ошибка при получении данных о пользователе: ${error}`));
+
+const cardsGetter = getInitialCards()
+  .then(cards => cards)
+  .catch(error => Promise.reject(`Ошибка при попытке получения карточек: ${error}`));
+
+Promise.all([userDataGetter, cardsGetter])
+  .then(([userData, cards]) => {
+    userId = userData._id;
+    setMyData(userData.name, userData.about, userData.avatar);
+    addInitialCards(cards)
+  })
+  .catch(error => {
+    console.log(error);
+  });
