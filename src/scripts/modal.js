@@ -5,8 +5,8 @@ function handleClick(evt) {
 
 function handleEscape (evt) {
   if (evt.key === 'Escape') {
-    const window = document.querySelector('.popup_is-opened');
-    closeModal(window);
+    const popupActive = document.querySelector('.popup_is-opened');
+    closeModal(popupActive);
   }
 }
 

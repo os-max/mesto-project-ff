@@ -6,17 +6,19 @@ const config = {
   }
 }
 
+function getResult(res) {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(res.status);
+}
+
 export const getMyData = () => {
   return fetch(`${config.baseUrl}users/me`, {
     method: 'GET',
     headers: config.headers,
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const getInitialCards = () => {
@@ -24,12 +26,7 @@ export const getInitialCards = () => {
     method: 'GET',
     headers: config.headers,
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const setNewUserData = (name, about) => {
@@ -41,12 +38,7 @@ export const setNewUserData = (name, about) => {
       about: `${about}`
     })
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const sendNewCard = (name, link) => {
@@ -58,12 +50,7 @@ export const sendNewCard = (name, link) => {
       link: `${link}`
     })
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+   .then (getResult)
 }
 
 export const likeCard = (cardId) => {
@@ -71,12 +58,7 @@ export const likeCard = (cardId) => {
     method: 'PUT',
     headers: config.headers
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const dislikeCard = (cardId) => {
@@ -84,12 +66,7 @@ export const dislikeCard = (cardId) => {
     method: 'DELETE',
     headers: config.headers
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const deleteCard = (cardId) => {
@@ -97,12 +74,7 @@ export const deleteCard = (cardId) => {
     method: 'DELETE',
     headers: config.headers
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }
 
 export const changeAvatar = (avatar) => {
@@ -113,10 +85,5 @@ export const changeAvatar = (avatar) => {
       avatar: `${avatar}`
     })
   })
-    .then (res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(res.status);
-    })
+    .then (getResult)
 }

@@ -1,7 +1,7 @@
 import '../styles/index.css';
 import {createCard, handleDelete, handleLike} from './card.js';
 import {openModal, closeModal} from './modal.js';
-import {enableValidation, clearValidation, validationConfig} from './validation.js'
+import {enableValidation, clearValidation} from './validation.js'
 import {
   getMyData,
   getInitialCards,
@@ -57,10 +57,26 @@ const handlers = {
   handleImageClick,
   likeCard,
   dislikeCard,
+  setupCardDelete
 };
 
-let cardPendingDelete = undefined
-let cardPendingDeleteId = undefined;
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup_input_error'
+}
+
+let deleteCardId = undefined;
+let deleteCardElement = undefined;
+
+function setupCardDelete(cardId, cardElement) {
+  openModal(popupTypeConfirm);
+  deleteCardId = cardId;
+  deleteCardElement = cardElement;
+}
 
 function addCard(place, position, cardData) {
   const newCard = createCard(cardData, handlers, userId);
@@ -91,12 +107,11 @@ function handleFormSubmitEdit(evt) {
       profileTitle.textContent = nameInput.value;
       profileDescription.textContent = jobInput.value;
       closeModal(popupEdit);
-      profileSubmitButton.textContent = 'Сохранить';
     })
     .catch(error => {
       console.log(`Ошибка при отправке данных о пользователе: ${error}`)
-      profileSubmitButton.textContent = 'Сохранить';
-    });
+    })
+    .finally(() => profileSubmitButton.textContent = 'Сохранить');
 }
 
 function handleFormSubmitNewCard(evt) {
@@ -109,18 +124,18 @@ function handleFormSubmitNewCard(evt) {
       addCard(placesList, 'start', newCard);
       formNewCard.reset();
       closeModal(popupNewCard);
-      newCardSubmitButton.textContent = 'Сохранить';
+      clearValidation(popupNewCard, validationConfig);
     })
     .catch(error => {
       console.log(`Ошибка при отправке карточки: ${error}`);
-      newCardSubmitButton.textContent = 'Сохранить';
-    });
+    })
+    .finally(() => newCardSubmitButton.textContent = 'Сохранить');
 }
 
-function handleImageClick (evt) {
-  popupImage.src = evt.target.src;
-  popupImage.alt = evt.target.alt;
-  popupCaption.textContent = evt.target.alt;
+function handleImageClick (src, alt) {
+  popupImage.src = src;
+  popupImage.alt = alt;
+  popupCaption.textContent = alt;
   openModal(popupTypeImage);
 }
 
@@ -137,29 +152,27 @@ function handleAvatarChange(evt) {
     .then(res => {
       profileImage.setAttribute('style', `background-image: url(${avatarLinkInput.value});`);
       closeModal(popupTypeAvatar);
-      avatarSubmitButton.textContent = 'Сохранить';
       formChangeAvatar.reset();
       clearValidation(formChangeAvatar, validationConfig);
     })
     .catch(error => {
       console.log(`Ошибка при изменении аватара: ${error}`);
-      avatarSubmitButton.textContent = 'Сохранить';
-    });
+    })
+    .finally(() => avatarSubmitButton.textContent = 'Сохранить');
 }
 
 function handleCardDeletion(evt) {
   evt.preventDefault();
   confirmDeleteButton.textContent = 'Удаление...';
-  deleteCard(cardPendingDeleteId)
+  deleteCard(deleteCardId)
     .then(res => {
-      cardPendingDelete.remove();
+      deleteCardElement.remove();
       closeModal(popupTypeConfirm);
-      confirmDeleteButton.textContent = 'Да';
     })
     .catch(error => {
       console.log(`Не удалось удалить карточку, ошибка: ${error}`)
-      confirmDeleteButton.textContent = 'Да';
-    });
+    })
+    .finally(() => confirmDeleteButton.textContent = 'Да');
 }
 
 profileEditButton.addEventListener('click', () => {
@@ -169,45 +182,27 @@ profileEditButton.addEventListener('click', () => {
   clearValidation(popupEdit, validationConfig);
 });
 
-clearValidation(popupNewCard, validationConfig);
 newCardButton.addEventListener('click', () => openModal(popupNewCard));
 
-clearValidation(popupTypeAvatar, validationConfig);
 profileImage.addEventListener('click', () => openModal(popupTypeAvatar));
 
 popupCloseButtons.forEach(el => {
   const popup = el.closest('.popup');
-  el.addEventListener('click', evt => closeModal(popup))
+  el.addEventListener('click', () => closeModal(popup))
 });
 
 formEditProfile.addEventListener('submit', handleFormSubmitEdit);
 formNewCard.addEventListener('submit', handleFormSubmitNewCard);
 formChangeAvatar.addEventListener('submit', handleAvatarChange);
 
-document.addEventListener('deleteCard', evt => {
-  cardPendingDelete = evt.target;
-  cardPendingDeleteId = evt.detail.id;
-  openModal(popupTypeConfirm);
-})
-
 popupTypeConfirm.addEventListener('submit', handleCardDeletion);
 
-enableValidation();
+enableValidation(validationConfig);
 
-const userDataGetter = getMyData()
-  .then(userData => userData)
-  .catch(error => Promise.reject(`Ошибка при получении данных о пользователе: ${error}`));
-
-const cardsGetter = getInitialCards()
-  .then(cards => cards)
-  .catch(error => Promise.reject(`Ошибка при попытке получения карточек: ${error}`));
-
-Promise.all([userDataGetter, cardsGetter])
+Promise.all([getMyData(), getInitialCards()])
   .then(([userData, cards]) => {
     userId = userData._id;
     setMyData(userData.name, userData.about, userData.avatar);
     addInitialCards(cards)
   })
-  .catch(error => {
-    console.log(error);
-  });
+  .catch(error => console.log(`Ошибка при загрузке данных пользователя/карточек: ${error}`));

@@ -1,12 +1,11 @@
 const cardTemplate = document.querySelector('#card-template').content;
 
-export function handleDelete(evt, cardDeleteEvent) {
-  const listItem = evt.target.closest('.card')
-  listItem.dispatchEvent(cardDeleteEvent);
+export function handleDelete(evt, cardId, cardSetter) {
+  const cardElement = evt.target.closest('.card');
+  cardSetter(cardId, cardElement);
 };
 
-export function handleLike(evt, cardLikeCounter, cardId, likeAPI, dislikeAPI) {
-  const likeButton = evt.target;
+export function handleLike(evt, likeButton, cardLikeCounter, cardId, likeAPI, dislikeAPI) {
   if (likeButton.classList.contains('card__like-button_is-active')) {
     dislikeAPI(cardId)
       .then(card => {
@@ -26,7 +25,7 @@ export function handleLike(evt, cardLikeCounter, cardId, likeAPI, dislikeAPI) {
 }
 
 export function createCard(cardData, handlers, userId) {
-  const isOwned = (cardData.owner._id === userId) ? true : false;
+  const isOwned = cardData.owner._id === userId;
   const isLiked = cardData.likes.some(el => el._id === userId);
 
   const newCard = cardTemplate.cloneNode(true);
@@ -37,19 +36,15 @@ export function createCard(cardData, handlers, userId) {
   const newCardImage = newCard.querySelector('.card__image');
   newCardImage.src = cardData.link;
   newCardImage.alt = cardData.name;
-  newCardImage.addEventListener('click', handlers.handleImageClick);
+  newCardImage.addEventListener('click', () => {
+    handlers.handleImageClick(newCardImage.src, newCardImage.alt);
+  });
 
 
   const newCardDelete = newCard.querySelector('.card__delete-button');
   if (isOwned) {
-    const cardDeleteEvent = new CustomEvent(`deleteCard`, {
-      bubbles: true,
-      detail: {
-        id: cardData._id
-      }
-    });
     newCardDelete.addEventListener('click', evt => {
-      handlers.handleDelete(evt, cardDeleteEvent);
+      handlers.handleDelete(evt, cardData._id, handlers.setupCardDelete);
     });
   }
   else {
@@ -68,7 +63,7 @@ export function createCard(cardData, handlers, userId) {
 
   newCardLikeCounter.textContent = cardData.likes.length;
   newCardLike.addEventListener('click', (evt) => {
-    handlers.handleLike(evt, newCardLikeCounter, cardData._id, handlers.likeCard, handlers.dislikeCard);
+    handlers.handleLike(evt, newCardLike, newCardLikeCounter, cardData._id, handlers.likeCard, handlers.dislikeCard);
   });
 
   return newCard;
