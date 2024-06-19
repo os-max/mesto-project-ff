@@ -13,7 +13,7 @@ function getResult(res) {
   return Promise.reject(res.status);
 }
 
-export const getMyData = () => {
+export const getUserData = () => {
   return fetch(`${config.baseUrl}users/me`, {
     method: 'GET',
     headers: config.headers,

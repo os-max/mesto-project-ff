@@ -3,7 +3,7 @@ import {createCard, handleDelete, handleLike} from './card.js';
 import {openModal, closeModal} from './modal.js';
 import {enableValidation, clearValidation} from './validation.js'
 import {
-  getMyData,
+  getUserData,
   getInitialCards,
   setNewUserData,
   sendNewCard,
@@ -122,9 +122,7 @@ function handleFormSubmitNewCard(evt) {
   sendNewCard(name, link)
     .then(newCard => {
       addCard(placesList, 'start', newCard);
-      formNewCard.reset();
       closeModal(popupNewCard);
-      clearValidation(popupNewCard, validationConfig);
     })
     .catch(error => {
       console.log(`Ошибка при отправке карточки: ${error}`);
@@ -152,8 +150,6 @@ function handleAvatarChange(evt) {
     .then(res => {
       profileImage.setAttribute('style', `background-image: url(${avatarLinkInput.value});`);
       closeModal(popupTypeAvatar);
-      formChangeAvatar.reset();
-      clearValidation(formChangeAvatar, validationConfig);
     })
     .catch(error => {
       console.log(`Ошибка при изменении аватара: ${error}`);
@@ -178,13 +174,21 @@ function handleCardDeletion(evt) {
 profileEditButton.addEventListener('click', () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
-  openModal(popupEdit);
   clearValidation(popupEdit, validationConfig);
+  openModal(popupEdit);
 });
 
-newCardButton.addEventListener('click', () => openModal(popupNewCard));
+newCardButton.addEventListener('click', () => {
+  formNewCard.reset();
+  clearValidation(popupNewCard, validationConfig);
+  openModal(popupNewCard);
+});
 
-profileImage.addEventListener('click', () => openModal(popupTypeAvatar));
+profileImage.addEventListener('click', () => {
+  formChangeAvatar.reset();
+  clearValidation(formChangeAvatar, validationConfig);
+  openModal(popupTypeAvatar);
+});
 
 popupCloseButtons.forEach(el => {
   const popup = el.closest('.popup');
@@ -199,7 +203,7 @@ popupTypeConfirm.addEventListener('submit', handleCardDeletion);
 
 enableValidation(validationConfig);
 
-Promise.all([getMyData(), getInitialCards()])
+Promise.all([getUserData(), getInitialCards()])
   .then(([userData, cards]) => {
     userId = userData._id;
     setMyData(userData.name, userData.about, userData.avatar);
